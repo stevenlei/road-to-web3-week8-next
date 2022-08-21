@@ -197,7 +197,7 @@ export default function Home() {
         value: gameCost,
       });
 
-      await tx.wait();
+      await tx.wait(2);
 
       await fetchGames();
 
@@ -232,7 +232,7 @@ export default function Home() {
         value: gameCost,
       });
 
-      await tx.wait();
+      await tx.wait(2);
 
       await fetchGames();
 
@@ -265,7 +265,7 @@ export default function Home() {
 
       const tx = await contract.reveal(magicWord);
 
-      await tx.wait();
+      await tx.wait(2);
 
       await fetchGames();
 
@@ -291,7 +291,7 @@ export default function Home() {
 
       const tx = await contract.judge();
 
-      await tx.wait();
+      await tx.wait(2);
 
       await fetchGames();
 
@@ -421,7 +421,7 @@ export default function Home() {
                     >
                       {isLoading ? loadingIcon() : <>Start with 0.001 ETH</>}
                     </button>
-                    {errorMessage && <p className="px-4 py-2 text-red-600">{errorMessage}</p>}
+                    {errorMessage && <p className="px-4 py-2 text-red-600 break-words break-all">{errorMessage}</p>}
                   </div>
                 </div>
               )}
@@ -451,7 +451,7 @@ export default function Home() {
                     >
                       {isLoading ? loadingIcon() : <>Join with 0.001 ETH</>}
                     </button>
-                    {errorMessage && <p className="px-4 py-2 text-red-600">{errorMessage}</p>}
+                    {errorMessage && <p className="px-4 py-2 text-red-600 break-words break-all">{errorMessage}</p>}
                   </div>
                 </div>
               )}
@@ -586,7 +586,7 @@ export default function Home() {
         <div className="text-center mt-12">
           {!walletAddress && (
             <button
-              className="mt-12 py-3 px-8 bg-purple-700 shadow hover:bg-purple-800 rounded-full text-white text-2xl"
+              className="mt-12 py-3 px-8 bg-yellow-600 shadow hover:bg-yellow-700 rounded-xl text-white text-xl"
               onClick={connectWallet}
             >
               Connect Wallet
