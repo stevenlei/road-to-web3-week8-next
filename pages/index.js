@@ -88,7 +88,6 @@ export default function Home() {
   };
 
   const ensureOnNetwork = async () => {
-    return;
     try {
       const { ethereum } = window;
 
@@ -96,12 +95,12 @@ export default function Home() {
       const { chainId } = await provider.getNetwork();
       console.log(`chainId: ${chainId}`);
 
-      if (chainId !== 5) {
+      if (chainId !== 420) {
         await ethereum.request({
           method: "wallet_switchEthereumChain",
           params: [
             {
-              chainId: `0x${Number(5).toString(16)}`,
+              chainId: `0x${Number(420).toString(16)}`,
             },
           ],
         });
