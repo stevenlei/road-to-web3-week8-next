@@ -98,15 +98,28 @@ export default function Home() {
       if (chainId !== 420) {
         await ethereum.request({
           method: "wallet_switchEthereumChain",
-          params: [
-            {
-              chainId: `0x${Number(420).toString(16)}`,
-            },
-          ],
+          params: [{ chainId: `0x${Number(420).toString(16)}` }],
         });
       }
-    } catch (err) {
-      console.error(err);
+    } catch (switchError) {
+      // This error code indicates that the chain has not been added to MetaMask.
+      if (switchError.code === 4902) {
+        try {
+          await ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: `0x${Number(420).toString(16)}`,
+                chainName: "Optimism Goerli",
+                rpcUrls: ["https://goerli.optimism.io/"],
+              },
+            ],
+          });
+        } catch (addError) {
+          // handle "add" error
+        }
+      }
+      // handle other "switch" errors
     }
   };
 
@@ -115,7 +128,11 @@ export default function Home() {
       const { ethereum } = window;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI.abi, provider);
+        const contract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          CONTRACT_ABI.abi,
+          provider
+        );
 
         const games = await contract.getGames();
 
@@ -188,7 +205,11 @@ export default function Home() {
 
       const provider = new ethers.providers.Web3Provider(ethereum);
       const signer = provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI.abi, signer);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        CONTRACT_ABI.abi,
+        signer
+      );
 
       const gameCost = await contract.gameCost();
       const wordHash = ethers.utils.id(magicWord);
@@ -224,7 +245,11 @@ export default function Home() {
 
       const provider = new ethers.providers.Web3Provider(ethereum);
       const signer = provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI.abi, signer);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        CONTRACT_ABI.abi,
+        signer
+      );
 
       const gameCost = await contract.gameCost();
 
@@ -259,7 +284,11 @@ export default function Home() {
 
       const provider = new ethers.providers.Web3Provider(ethereum);
       const signer = provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI.abi, signer);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        CONTRACT_ABI.abi,
+        signer
+      );
 
       const gameCost = await contract.gameCost();
 
@@ -287,7 +316,11 @@ export default function Home() {
 
       const provider = new ethers.providers.Web3Provider(ethereum);
       const signer = provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI.abi, signer);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        CONTRACT_ABI.abi,
+        signer
+      );
 
       const tx = await contract.judge();
 
@@ -311,7 +344,14 @@ export default function Home() {
       fill="none"
       viewBox="0 0 24 24"
     >
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
       <path
         className="opacity-75"
         fill="currentColor"
@@ -321,7 +361,9 @@ export default function Home() {
   );
 
   const localTime = (timestamp) => {
-    return `${new Date(timestamp * 1000).toLocaleDateString()} ${new Date(timestamp * 1000).toLocaleTimeString()}`;
+    return `${new Date(timestamp * 1000).toLocaleDateString()} ${new Date(
+      timestamp * 1000
+    ).toLocaleTimeString()}`;
   };
 
   const shortenAddress = (address) => {
@@ -341,8 +383,9 @@ export default function Home() {
           Road to Web3 - <strong>Week 8</strong>
         </h1>
         <p className="text-center mt-4 text-lg max-w-xl mx-auto text-yellow-500">
-          This is a practice project to learn ethers.js and solidity. The eighth week is to develop a &quot;Build a
-          better game on Optimism&quot; smart contract.
+          This is a practice project to learn ethers.js and solidity. The eighth
+          week is to develop a &quot;Build a better game on Optimism&quot; smart
+          contract.
           <br />
           <a
             href="https://www.youtube.com/watch?v=TL5NoWky3Uk"
@@ -369,43 +412,58 @@ export default function Home() {
               <h4 className="text-xl font-bold">How to play</h4>
               <ul className="mt-2 list-disc">
                 <li>
-                  Two parties per game, one is <strong>Player Odd</strong> (who started the game) and the other is{" "}
+                  Two parties per game, one is <strong>Player Odd</strong> (who
+                  started the game) and the other is{" "}
                   <strong>Player Even</strong> (who joined the game).
                 </li>
                 <li>
-                  The game result is determined by the the sum of length of the magic words from both players, if
-                  that&apos;s odd then <strong>Player Odd</strong> wins, otherwise <strong>Player Even</strong> wins.
+                  The game result is determined by the the sum of length of the
+                  magic words from both players, if that&apos;s odd then{" "}
+                  <strong>Player Odd</strong> wins, otherwise{" "}
+                  <strong>Player Even</strong> wins.
                 </li>
                 <li>
-                  Because of there are no real private variables on blockchain, everyone can reveal the data of a smart
-                  contract. So the word <strong>Player Odd</strong> submitted during game creation will be hashed with
-                  keccak256.
+                  Because of there are no real private variables on blockchain,
+                  everyone can reveal the data of a smart contract. So the word{" "}
+                  <strong>Player Odd</strong> submitted during game creation
+                  will be hashed with keccak256.
                 </li>
                 <li>
-                  After that, <strong>Player Even</strong> can join the game with word in plaintext.
+                  After that, <strong>Player Even</strong> can join the game
+                  with word in plaintext.
                 </li>
                 <li>
-                  <strong>Player Odd</strong> takes the responsibility to reveal the word after{" "}
-                  <strong>Player Even</strong> submitted the word, which must be the same as the word in game creation,
+                  <strong>Player Odd</strong> takes the responsibility to reveal
+                  the word after <strong>Player Even</strong> submitted the
+                  word, which must be the same as the word in game creation,
                   verify by the hash on-chain.
                 </li>
                 <li>
-                  If <strong>Player Odd</strong> is not revealing the word within a certain time, everyone can help to
-                  judge the game and receive a reward of 5% of the game balance, and <strong>Player Even</strong> will
-                  be the winner.
+                  If <strong>Player Odd</strong> is not revealing the word
+                  within a certain time, everyone can help to judge the game and
+                  receive a reward of 5% of the game balance, and{" "}
+                  <strong>Player Even</strong> will be the winner.
                 </li>
                 <li>
-                  Cost of starting / joining the game is <strong>0.001 ETH</strong>.
+                  Cost of starting / joining the game is{" "}
+                  <strong>0.001 ETH</strong>.
                 </li>
-                <li>This is only a programming practice and just for fun on testnet.</li>
+                <li>
+                  This is only a programming practice and just for fun on
+                  testnet.
+                </li>
               </ul>
             </div>
             <div className="w-full order-0 sm:order-1 sm:w-auto sm:flex-1">
               {!currentGame && (
                 <div className="self-start w-full bg-yellow-400 ring-4 ring-yellow-500 rounded-xl overflow-hidden">
-                  <h4 className="text-2xl text-center bg-yellow-300 p-2 text-yellow-800">Start a New Game</h4>
+                  <h4 className="text-2xl text-center bg-yellow-300 p-2 text-yellow-800">
+                    Start a New Game
+                  </h4>
                   <div className="p-4">
-                    <h5 className="text-center p-2 text-xl text-yellow-800">Enter Your Magic Word</h5>
+                    <h5 className="text-center p-2 text-xl text-yellow-800">
+                      Enter Your Magic Word
+                    </h5>
                     <input
                       type="text"
                       onInput={() => setMagicWord(event.target.value)}
@@ -421,106 +479,139 @@ export default function Home() {
                     >
                       {isLoading ? loadingIcon() : <>Start with 0.001 ETH</>}
                     </button>
-                    {errorMessage && <p className="px-4 py-2 text-red-600 break-words break-all">{errorMessage}</p>}
-                  </div>
-                </div>
-              )}
-
-              {currentGame && currentGame.status === GameStatus.WAITING_FOR_PLAYER_EVEN_TO_JOIN && (
-                <div className="self-start w-full bg-yellow-400 ring-4 ring-yellow-500 rounded-xl overflow-hidden">
-                  <h4 className="text-2xl text-center bg-yellow-300 p-2 text-yellow-800">
-                    Join the Game by {shortenAddress(currentGame.playerOdd)}
-                  </h4>
-                  <div className="p-4">
-                    <h5 className="text-center p-2 text-xl text-yellow-800">
-                      Game started at {localTime(currentGame.startTime)}
-                    </h5>
-                    <h5 className="text-center p-2 text-xl text-yellow-800">Enter Your Magic Word</h5>
-                    <input
-                      type="text"
-                      onInput={() => setMagicWord(event.target.value)}
-                      value={magicWord}
-                      className="w-full bg-yellow-50 text-center text-2xl ring-2 outline-none p-2 focus:ring-4 ring-amber-300 transition rounded-lg mt-2"
-                      placeholder=""
-                      disabled={isLoading}
-                    />
-                    <button
-                      onClick={joinGame}
-                      disabled={isLoading}
-                      className="py-2 px-5 mt-4 pb-3 w-full bg-yellow-700 hover:bg-yellow-800 transition shadow rounded-lg text-yellow-300 text-xl"
-                    >
-                      {isLoading ? loadingIcon() : <>Join with 0.001 ETH</>}
-                    </button>
-                    {errorMessage && <p className="px-4 py-2 text-red-600 break-words break-all">{errorMessage}</p>}
-                  </div>
-                </div>
-              )}
-
-              {currentGame && currentGame.status === GameStatus.WAITING_FOR_PLAYER_ODD_TO_REVEAL && (
-                <div className="self-start w-full bg-yellow-400 ring-4 ring-yellow-500 rounded-xl overflow-hidden">
-                  <h4 className="text-2xl text-center bg-yellow-300 p-2 text-yellow-800">
-                    Waiting for {shortenAddress(currentGame.playerOdd)} to Reveal
-                  </h4>
-                  <div className="p-4">
-                    <h5 className="text-center p-2 text-xl text-yellow-800">
-                      {shortenAddress(currentGame.playerEven)} joined at {localTime(currentGame.playerEvenJoinedTime)}
-                    </h5>
-
-                    <h5 className="text-center p-2 text-xl text-yellow-800">
-                      Must be revealed before {localTime(currentGame.endTime)}
-                    </h5>
-
-                    {currentGame.playerOdd.toLowerCase() === walletAddress.toLowerCase() && (
-                      <>
-                        <h5 className="text-center p-2 text-xl text-yellow-800">Enter Your Magic Word</h5>
-                        <input
-                          type="text"
-                          onInput={() => setMagicWord(event.target.value)}
-                          value={magicWord}
-                          className="w-full bg-yellow-50 text-center text-2xl ring-2 outline-none p-2 focus:ring-4 ring-amber-300 transition rounded-lg mt-2"
-                          placeholder=""
-                          disabled={isLoading}
-                        />
-                        <button
-                          onClick={reveal}
-                          disabled={isLoading}
-                          className="py-2 px-5 mt-4 pb-3 w-full bg-yellow-700 hover:bg-yellow-800 transition shadow rounded-lg text-yellow-300 text-xl"
-                        >
-                          {isLoading ? loadingIcon() : <>Reveal</>}
-                        </button>
-                      </>
+                    {errorMessage && (
+                      <p className="px-4 py-2 text-red-600 break-words break-all">
+                        {errorMessage}
+                      </p>
                     )}
+                  </div>
+                </div>
+              )}
 
-                    {currentGame.playerOdd.toLowerCase() !== walletAddress.toLowerCase() && (
-                      <>
-                        <button
-                          onClick={judge}
-                          disabled={isLoading || currentGame.endTime * 1000 > +Date.now()}
-                          className="py-2 px-5 mt-4 pb-3 w-full bg-yellow-700 hover:bg-yellow-800 transition shadow rounded-lg text-yellow-300 text-xl"
-                        >
-                          {isLoading ? (
-                            loadingIcon()
-                          ) : (
-                            <>{currentGame.endTime * 1000 > +Date.now() ? "Not Yet" : "Judge"}</>
-                          )}
-                        </button>
-                        <p className="text-yellow-600 mt-3 leading-tight text-center">
-                          You can receive 5% of the game balance by helping to judge the game that exceeded the time to
-                          reveal.
+              {currentGame &&
+                currentGame.status ===
+                  GameStatus.WAITING_FOR_PLAYER_EVEN_TO_JOIN && (
+                  <div className="self-start w-full bg-yellow-400 ring-4 ring-yellow-500 rounded-xl overflow-hidden">
+                    <h4 className="text-2xl text-center bg-yellow-300 p-2 text-yellow-800">
+                      Join the Game by {shortenAddress(currentGame.playerOdd)}
+                    </h4>
+                    <div className="p-4">
+                      <h5 className="text-center p-2 text-xl text-yellow-800">
+                        Game started at {localTime(currentGame.startTime)}
+                      </h5>
+                      <h5 className="text-center p-2 text-xl text-yellow-800">
+                        Enter Your Magic Word
+                      </h5>
+                      <input
+                        type="text"
+                        onInput={() => setMagicWord(event.target.value)}
+                        value={magicWord}
+                        className="w-full bg-yellow-50 text-center text-2xl ring-2 outline-none p-2 focus:ring-4 ring-amber-300 transition rounded-lg mt-2"
+                        placeholder=""
+                        disabled={isLoading}
+                      />
+                      <button
+                        onClick={joinGame}
+                        disabled={isLoading}
+                        className="py-2 px-5 mt-4 pb-3 w-full bg-yellow-700 hover:bg-yellow-800 transition shadow rounded-lg text-yellow-300 text-xl"
+                      >
+                        {isLoading ? loadingIcon() : <>Join with 0.001 ETH</>}
+                      </button>
+                      {errorMessage && (
+                        <p className="px-4 py-2 text-red-600 break-words break-all">
+                          {errorMessage}
                         </p>
-                      </>
-                    )}
-                    {errorMessage && <p className="px-4 py-2 break-words break-all text-red-600">{errorMessage}</p>}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+
+              {currentGame &&
+                currentGame.status ===
+                  GameStatus.WAITING_FOR_PLAYER_ODD_TO_REVEAL && (
+                  <div className="self-start w-full bg-yellow-400 ring-4 ring-yellow-500 rounded-xl overflow-hidden">
+                    <h4 className="text-2xl text-center bg-yellow-300 p-2 text-yellow-800">
+                      Waiting for {shortenAddress(currentGame.playerOdd)} to
+                      Reveal
+                    </h4>
+                    <div className="p-4">
+                      <h5 className="text-center p-2 text-xl text-yellow-800">
+                        {shortenAddress(currentGame.playerEven)} joined at{" "}
+                        {localTime(currentGame.playerEvenJoinedTime)}
+                      </h5>
+
+                      <h5 className="text-center p-2 text-xl text-yellow-800">
+                        Must be revealed before {localTime(currentGame.endTime)}
+                      </h5>
+
+                      {currentGame.playerOdd.toLowerCase() ===
+                        walletAddress.toLowerCase() && (
+                        <>
+                          <h5 className="text-center p-2 text-xl text-yellow-800">
+                            Enter Your Magic Word
+                          </h5>
+                          <input
+                            type="text"
+                            onInput={() => setMagicWord(event.target.value)}
+                            value={magicWord}
+                            className="w-full bg-yellow-50 text-center text-2xl ring-2 outline-none p-2 focus:ring-4 ring-amber-300 transition rounded-lg mt-2"
+                            placeholder=""
+                            disabled={isLoading}
+                          />
+                          <button
+                            onClick={reveal}
+                            disabled={isLoading}
+                            className="py-2 px-5 mt-4 pb-3 w-full bg-yellow-700 hover:bg-yellow-800 transition shadow rounded-lg text-yellow-300 text-xl"
+                          >
+                            {isLoading ? loadingIcon() : <>Reveal</>}
+                          </button>
+                        </>
+                      )}
+
+                      {currentGame.playerOdd.toLowerCase() !==
+                        walletAddress.toLowerCase() && (
+                        <>
+                          <button
+                            onClick={judge}
+                            disabled={
+                              isLoading ||
+                              currentGame.endTime * 1000 > +Date.now()
+                            }
+                            className="py-2 px-5 mt-4 pb-3 w-full bg-yellow-700 hover:bg-yellow-800 transition shadow rounded-lg text-yellow-300 text-xl"
+                          >
+                            {isLoading ? (
+                              loadingIcon()
+                            ) : (
+                              <>
+                                {currentGame.endTime * 1000 > +Date.now()
+                                  ? "Not Yet"
+                                  : "Judge"}
+                              </>
+                            )}
+                          </button>
+                          <p className="text-yellow-600 mt-3 leading-tight text-center">
+                            You can receive 5% of the game balance by helping to
+                            judge the game that exceeded the time to reveal.
+                          </p>
+                        </>
+                      )}
+                      {errorMessage && (
+                        <p className="px-4 py-2 break-words break-all text-red-600">
+                          {errorMessage}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
               {pastGames.map((game, index) => (
                 <div
                   key={index}
                   className="self-start w-full bg-slate-700 ring-4 ring-slate-800 rounded-xl overflow-hidden my-6"
                 >
-                  <h4 className="text-2xl text-center bg-slate-600 p-2 text-slate-300">{localTime(game.startTime)}</h4>
+                  <h4 className="text-2xl text-center bg-slate-600 p-2 text-slate-300">
+                    {localTime(game.startTime)}
+                  </h4>
                   <div className="p-4 text-slate-300 text-lg">
                     <div className="flex">
                       <p className="flex-1">
@@ -528,7 +619,8 @@ export default function Home() {
                         {shortenAddress(game.playerOdd)}
                       </p>
                       <p className="flex-1">
-                        <span className="text-slate-500">Joined by</span> {shortenAddress(game.playerEven)}
+                        <span className="text-slate-500">Joined by</span>{" "}
+                        {shortenAddress(game.playerEven)}
                       </p>
                     </div>
                     <div className="flex">
@@ -540,7 +632,9 @@ export default function Home() {
                       )}
                       {!game.magicWordOdd && (
                         <p className="flex-1">
-                          <span className="text-slate-500">Started Word not revealed</span>
+                          <span className="text-slate-500">
+                            Started Word not revealed
+                          </span>
                         </p>
                       )}
                       <p className="flex-1 break-words break-all">
@@ -550,18 +644,23 @@ export default function Home() {
                     </div>
                     <div className="flex">
                       <p className="flex-1">
-                        <span className="text-slate-500">Total game cost: </span>
+                        <span className="text-slate-500">
+                          Total game cost:{" "}
+                        </span>
                         {ethers.utils.formatEther(game.cost.mul(2))} ETH
                       </p>
                       <p className="flex-1">
                         <span className="text-slate-500">Total Length: </span>
-                        {Number(game.totalLength) ? Number(game.totalLength) : "-"}
+                        {Number(game.totalLength)
+                          ? Number(game.totalLength)
+                          : "-"}
                       </p>
                     </div>
                     <div className="flex">
                       <p className="flex-1">
                         <span className="text-slate-500">Winner: </span>
-                        {Number(game.totalLength) === 0 && `${shortenAddress(game.playerEven)} (Even)`}
+                        {Number(game.totalLength) === 0 &&
+                          `${shortenAddress(game.playerEven)} (Even)`}
                         {Number(game.totalLength) !== 0 &&
                           Number(game.totalLength) % 2 === 0 &&
                           `${shortenAddress(game.playerEven)} (Even)`}
@@ -569,7 +668,8 @@ export default function Home() {
                           Number(game.totalLength) % 2 !== 0 &&
                           `${shortenAddress(game.playerOdd)} (Odd)`}
                       </p>
-                      {game.judge !== "0x0000000000000000000000000000000000000000" && (
+                      {game.judge !==
+                        "0x0000000000000000000000000000000000000000" && (
                         <p className="flex-1">
                           <span className="text-slate-500">Judged by </span>
                           {shortenAddress(game.judge)}
